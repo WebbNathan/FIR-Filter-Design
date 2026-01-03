@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module shftreg_16bit #(
-    parameter integer N = 8
+    parameter int N = 8
 )(
     clk,
     rst,
@@ -9,11 +9,11 @@ module shftreg_16bit #(
     data_out     
 );
 
-    input clk, rst;
-    input wire [15:0] data_in;
-    output wire [15:0] data_out [0:N -1];
+    input logic clk, rst;
+    input logic [15:0] data_in;
+    output logic [15:0] data_out [0:N -1];
     
-    reg [15:0] registers [0:N-1];
+    logic [15:0] registers [0:N-1];
     
     always @(posedge clk or posedge rst) begin
         if(rst) begin

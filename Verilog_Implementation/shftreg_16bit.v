@@ -1,0 +1,37 @@
+`timescale 1ns / 1ps
+
+module shftreg_16bit #(
+    parameter integer N = 8
+)(
+    clk,
+    rst,
+    data_in,
+    data_out     
+);
+
+    input clk, rst;
+    input wire [15:0] data_in;
+    output wire [15:0] data_out [0:N -1];
+    
+    reg [15:0] registers [0:N-1];
+    
+    always @(posedge clk or posedge rst) begin
+        if(rst) begin
+            for (integer i = 0; i < N; i = i + 1) begin
+                registers[i] <= 16'b0;
+            end
+        end
+        
+        else begin
+           for(integer i = 0; i < N - 1; i = i + 1) begin
+                registers[i + 1] <= registers[i];
+           end
+           registers[0] <= data_in;
+        end
+    end
+    
+    genvar i;
+    for(i = 0; i < N; i = i + 1) begin
+        assign data_out[i] = registers[i]; 
+    end
+endmodule

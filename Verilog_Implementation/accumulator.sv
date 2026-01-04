@@ -12,6 +12,7 @@ module accumulator #(
 );
     localparam int ACCUBITS  = MULTBITS + $clog2(TAPS);
     localparam int P = 1 << $clog2(TAPS); //get closest power of 2 for binary tree
+    localparam int LOGP = $clog2(P);
     
     input logic clk, in_valid;
     input logic [MULTBITS-1:0] multiplier_out [0:TAPS-1];
@@ -23,8 +24,8 @@ module accumulator #(
     logic [ACCUBITS-1:0] sum [1:P-1];
     logic [ACCUBITS-1:0] sum_reg [1:P-1];
     
-    logic valid_carry [1:(P >> 1) - 2];
-    logic valid_carry_reg [1:(P >> 1) - 2];
+    logic valid_carry [1:LOGP - 1];
+    logic valid_carry_reg [1:LOGP - 1];
 
     //First generate is to pad the input array with 0 if it is not a multiple of 2
     genvar i;
@@ -72,6 +73,6 @@ module accumulator #(
     
     assign valid_carry[1] = in_valid;
     assign out = sum[1];
-    assign out_valid = valid_carry_reg[(P >> 1) - 2];
+    assign out_valid = valid_carry_reg[LOGP - 1];
     
 endmodule

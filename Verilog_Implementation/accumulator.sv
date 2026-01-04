@@ -17,7 +17,8 @@ module accumulator #(
     output [ACCUBITS-1:0] out;
     
     logic [MULTBITS-1:0] padded_mult_out [0:P-1];
-    logic [ACCUBITS-1:0] sum [0:P-1];
+    logic [ACCUBITS-1:0] sum [1:P-1];
+    logic [ACCUBITS-1:0] sum_reg [1:P-1];
 
     genvar i;
     generate
@@ -38,11 +39,15 @@ module accumulator #(
                 assign sum[P - i - 1] = padded_mult_out[2 * i] + padded_mult_out[2 * i + 1];
             end
             else begin
-                assign sum[P - i - 1] = sum[2 * (P - i - 1)] + sum[2 * (P - i - 1)  + 1];
+                assign sum[P - i - 1] = sum_reg[2 * (P - i - 1)] + sum_reg[2 * (P - i - 1)  + 1];
+            end
+            
+            always_ff @(posedge clk && in_valid) begin
+                sum_reg[P - i - 1] = sum[P - i - 1];
             end
         end
     endgenerate
     
-    assign out = sum[0];
+    assign out = sum[1];
     
 endmodule

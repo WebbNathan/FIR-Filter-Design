@@ -8,18 +8,25 @@ module accumulator #(
     in_valid,
     multiplier_out,
     out,
+    out_valid
 );
     localparam int ACCUBITS  = MULTBITS + $clog2(TAPS);
     localparam int P = 1 << $clog2(TAPS); //get closest power of 2 for binary tree
     
     input logic clk, in_valid;
-    input [MULTBITS-1:0] multiplier_out [0:TAPS-1];
-    output [ACCUBITS-1:0] out;
+    input logic [MULTBITS-1:0] multiplier_out [0:TAPS-1];
+    
+    output logic [ACCUBITS-1:0] out;
+    output logic out_valid;
     
     logic [MULTBITS-1:0] padded_mult_out [0:P-1];
     logic [ACCUBITS-1:0] sum [1:P-1];
     logic [ACCUBITS-1:0] sum_reg [1:P-1];
+    
+    logic valid_carry [1:(P >> 1) - 2];
+    logic valid_carry_reg [1:(P >> 1) - 2];
 
+    //First generate is to pad the input array with 0 if it is not a multiple of 2
     genvar i;
     generate
         for(i = 0; i < P; i++) begin : GEN_PAD
@@ -42,12 +49,29 @@ module accumulator #(
                 assign sum[P - i - 1] = sum_reg[2 * (P - i - 1)] + sum_reg[2 * (P - i - 1)  + 1];
             end
             
-            always_ff @(posedge clk && in_valid) begin
-                sum_reg[P - i - 1] = sum[P - i - 1];
+            always_ff @(posedge clk) begin
+                if(i < (P >> 1) && in_valid) begin //making sure inputs valid
+                    sum_reg[P - i - 1] = sum[P - i - 1];
+                end
+                else if (!(i < (P >> 1)))begin
+                    sum_reg[P - i - 1] = sum[P - i - 1];
+                end
             end
         end
     endgenerate
     
+    generate
+        for(i = 1; i < P - 2; i++) begin : GEN_VALID_CARRY
+            assign valid_carry[i] = valid_carry_reg[i-1];
+            
+            always_ff @(posedge clk) begin
+                valid_carry_reg[i] = valid_carry[i];
+            end
+        end
+    endgenerate
+    
+    assign valid_carry[1] = in_valid;
     assign out = sum[1];
+    assign out_valid = valid_carry_reg[(P >> 1) - 2];
     
 endmodule

@@ -30,6 +30,8 @@ module accumulator_tb();
        end
        
        in_valid <= 1;
+       #15
+       in_valid <=0;
     end
 
 endmodule

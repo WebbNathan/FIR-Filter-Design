@@ -2,8 +2,8 @@
 
 module accumulator_tb();
 
-    localparam MULTBITS = 32;
-    localparam TAPS = 33;
+    localparam int MULTBITS = 32;
+    localparam int TAPS = 33;
     localparam int ACCUBITS  = MULTBITS + $clog2(TAPS);
 
     logic clk, in_valid;

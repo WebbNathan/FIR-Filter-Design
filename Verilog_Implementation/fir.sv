@@ -25,12 +25,11 @@ module fir #(
     output logic [15:0] out_sample;
     
     logic [15:0] sample_shftreg_out [0:TAPS-1]; //wires from shift register
-    logic [15:0] sample_shftreg_out_reg [0:TAPS-1]; //pipeline registers for shift register
+    logic [15:0] sample_shftreg_pipeline_reg [0:TAPS-1]; //pipeline registers for shift register
     logic [15:0] sample_shftreg_pipeline_out [0:TAPS-1]; //wires out of pipeline
     
-    logic [32:0] multiplier_out_wires[0:TAPS-1]; //wires out of multipler
+    logic [32:0] multiplier_out[0:TAPS-1]; //wires out of multipler
     logic [32:0] multiplier_pipeline_reg [0:TAPS-1]; //pipeline registers
-    
     logic [32:0] multiplier_pipeline_out [0:TAPS-1]; //wire out of pipeline
     
     logic accu_in_valid;
@@ -50,7 +49,7 @@ module fir #(
         multiplier_16bit mult (
           .A(sample_shftreg_pipeline_out[i]),
           .B(in_weights[i]),
-          .out(multiplier_out_wires[i])
+          .out(multiplier_out[i])
         );
       end
     endgenerate   
@@ -65,11 +64,11 @@ module fir #(
                   );
     
     always_ff @(posedge clk) begin
-        sample_shftreg_out_reg <= sample_shftreg_out;
-        multiplier_pipeline_reg <= multiplier_out_wires;
+        sample_shftreg_pipeline_reg <= sample_shftreg_out;
+        multiplier_pipeline_reg <= multiplier_out;
     end
     
     assign multiplier_pipeline_out = multiplier_pipeline_reg;
-    assign sample_shftreg_pipeline_out = sample_shftreg_out_reg;
+    assign sample_shftreg_pipeline_out = sample_shftreg_pipeline_reg;
 
 endmodule

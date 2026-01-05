@@ -15,14 +15,14 @@ module accumulator #(
     localparam int LOGP = $clog2(P);
     
     input logic clk, in_valid;
-    input logic [MULTBITS-1:0] multiplier_out [0:TAPS-1];
+    input logic signed [MULTBITS-1:0] multiplier_out [0:TAPS-1];
     
-    output logic [ACCUBITS-1:0] out;
+    output logic signed [ACCUBITS-1:0] out;
     output logic out_valid;
     
-    logic [MULTBITS-1:0] padded_mult_out [0:P-1];
-    logic [ACCUBITS-1:0] sum [1:P-1];
-    logic [ACCUBITS-1:0] sum_reg [1:P-1];
+    logic signed [MULTBITS-1:0] padded_mult_out [0:P-1];
+    logic signed [ACCUBITS-1:0] sum [1:P-1];
+    logic signed [ACCUBITS-1:0] sum_reg [1:P-1];
     
     logic valid_carry [1:LOGP];
     logic valid_carry_reg [1:LOGP];
@@ -44,18 +44,20 @@ module accumulator #(
     generate
         for(i = 0; i < P - 1; i++) begin : GEN_SUM
             if(i < (P >> 1)) begin
-                assign sum[P - i - 1] = padded_mult_out[2 * i] + padded_mult_out[2 * i + 1];
+                assign sum[P - i - 1] = $signed(padded_mult_out[2 * i]) 
+                                      + $signed(padded_mult_out[2 * i + 1]);
             end
             else begin
-                assign sum[P - i - 1] = sum_reg[2 * (P - i - 1)] + sum_reg[2 * (P - i - 1)  + 1];
+                assign sum[P - i - 1] = $signed(sum_reg[2 * (P - i - 1)]) 
+                                        + $signed(sum_reg[2 * (P - i - 1)  + 1]);
             end
             
             always_ff @(posedge clk) begin
                 if(i < (P >> 1) && in_valid) begin //making sure inputs valid
-                    sum_reg[P - i - 1] = sum[P - i - 1];
+                    sum_reg[P - i - 1] = $signed(sum[P - i - 1]);
                 end
                 else if (!(i < (P >> 1)))begin
-                    sum_reg[P - i - 1] = sum[P - i - 1];
+                    sum_reg[P - i - 1] = $signed(sum[P - i - 1]);
                 end
             end
         end
@@ -76,7 +78,7 @@ module accumulator #(
         end
     endgenerate
     
-    assign out = sum_reg[1];
+    assign out = $signed(sum_reg[1]);
     assign out_valid = valid_carry_reg[LOGP];
     
 endmodule

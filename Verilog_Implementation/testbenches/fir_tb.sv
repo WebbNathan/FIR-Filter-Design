@@ -2,7 +2,7 @@
 
 module fir_tb();
 
-    localparam int TAPS = 10;
+    localparam int TAPS = 401;
     localparam int MULTBITS = 32;
     
     logic clk, rst, in_valid, out_valid;

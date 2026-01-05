@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 
 module fir #(
-    parameter int TAPS = 401
+    parameter int TAPS = 401,
+    parameter int MULTBITS = 32
 )(
     clk,
     rst,
@@ -13,6 +14,8 @@ module fir #(
     out_valid, //current ouput is valid
     out_sample,
 );
+
+    localparam int ACCUBITS = MULTBITS + $clog2(TAPS);
     
     input logic clk, rst;
     input logic in_valid;
@@ -22,10 +25,17 @@ module fir #(
     output logic [15:0] out_sample;
     
     logic [15:0] sample_shftreg_out [0:TAPS-1]; //wires from shift register
+    logic [15:0] sample_shftreg_out_reg [0:TAPS-1]; //pipeline registers for shift register
+    logic [15:0] sample_shftreg_pipeline_out [0:TAPS-1]; //wires out of pipeline
+    
     logic [32:0] multiplier_out_wires[0:TAPS-1]; //wires out of multipler
     logic [32:0] multiplier_pipeline_reg [0:TAPS-1]; //pipeline registers
     
     logic [32:0] multiplier_pipeline_out [0:TAPS-1]; //wire out of pipeline
+    
+    logic accu_in_valid;
+    logic accu_out_valid;
+    logic [ACCUBITS-1:0] accu_out;
 
     shftreg_16bit #(.N(TAPS)) sample_shftreg (
       .clk(clk),
@@ -38,17 +48,28 @@ module fir #(
     generate
       for(i = 0; i < TAPS; i++) begin : GEN_BLOCK
         multiplier_16bit mult (
-          .A(sample_shftreg_out[i]),
+          .A(sample_shftreg_pipeline_out[i]),
           .B(in_weights[i]),
           .out(multiplier_out_wires[i])
         );
       end
     endgenerate   
     
-    always @(posedge clk) begin
+    accumulator #(.TAPS(TAPS), .MULTBITS(MULTBITS)) accu 
+                  (
+                  .clk(clk), 
+                  .in_valid(accu_in_valid), 
+                  .multiplier_out(multiplier_pipeline_out), 
+                  .out(accu_out), 
+                  .out_valid(accu_out_valid)
+                  );
+    
+    always_ff @(posedge clk) begin
+        sample_shftreg_out_reg <= sample_shftreg_out;
         multiplier_pipeline_reg <= multiplier_out_wires;
     end
     
     assign multiplier_pipeline_out = multiplier_pipeline_reg;
+    assign sample_shftreg_pipeline_out = sample_shftreg_out_reg;
 
 endmodule

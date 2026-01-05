@@ -11,10 +11,10 @@ module shftreg_16bit #(
 );
 
     input logic clk, rst, in_valid;
-    input logic [15:0] data_in;
-    output logic [15:0] data_out [0:N -1];
+    input logic signed [15:0] data_in;
+    output logic signed [15:0] data_out [0:N -1];
     
-    logic [15:0] registers [0:N-1];
+    logic signed [15:0]registers [0:N-1];
     
     always @(posedge clk or posedge rst) begin
         if(rst) begin
@@ -35,6 +35,6 @@ module shftreg_16bit #(
     
     genvar i;
     for(i = 0; i < N; i = i + 1) begin
-        assign data_out[i] = registers[i]; 
+        assign data_out[i] = $signed(registers[i]); 
     end
 endmodule

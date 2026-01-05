@@ -16,29 +16,29 @@ module fir #(
     
     input logic clk, rst;
     input logic in_valid;
-    input logic [15:0] in_sample;
+    input logic signed [15:0] in_sample;
     output logic out_valid;
-    output logic [15:0] out_sample;
+    output logic signed [15:0] out_sample;
     
     logic [15:0] in_weights [0 : TAPS - 1];
     
-    logic [15:0] sample_shftreg_out [0:TAPS-1]; //wires from shift register
-    logic [15:0] sample_shftreg_pipeline_reg [0:TAPS-1]; //pipeline registers for shift register
-    logic [15:0] sample_shftreg_pipeline_out [0:TAPS-1]; //wires out of pipeline
+    logic signed [15:0] sample_shftreg_out [0:TAPS-1]; //wires from shift register
+    logic signed [15:0] sample_shftreg_pipeline_reg [0:TAPS-1]; //pipeline registers for shift register
+    logic signed [15:0] sample_shftreg_pipeline_out [0:TAPS-1]; //wires out of pipeline
     
-    logic [31:0] multiplier_out[0:TAPS-1]; //wires out of multipler
-    logic [31:0] multiplier_pipeline_reg [0:TAPS-1]; //pipeline registers
-    logic [31:0] multiplier_pipeline_out [0:TAPS-1]; //wire out of pipeline
+    logic signed [31:0] multiplier_out[0:TAPS-1]; //wires out of multipler
+    logic signed [31:0] multiplier_pipeline_reg [0:TAPS-1]; //pipeline registers
+    logic signed [31:0] multiplier_pipeline_out [0:TAPS-1]; //wire out of pipeline
     
     logic accu_in_valid; //will remove
     logic accu_out_valid; //will remove
     
-    logic [ACCUBITS-1:0] accu_out;
-    logic [ACCUBITS-1:0] accu_pipeline_reg;
-    logic [ACCUBITS-1:0] accu_pipeline_out;
+    logic signed [ACCUBITS-1:0] accu_out;
+    logic signed [ACCUBITS-1:0] accu_pipeline_reg;
+    logic signed [ACCUBITS-1:0] accu_pipeline_out;
     
-    logic [15:0] satu_out;
-    logic [15:0] satu_pipeline_reg;
+    logic signed [15:0] satu_out;
+    logic signed [15:0] satu_pipeline_reg;
     
     logic valid_bits [0:4];
     logic valid_bits_reg [0:4];

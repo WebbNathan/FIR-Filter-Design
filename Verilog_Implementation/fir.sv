@@ -1,14 +1,13 @@
 `timescale 1ns / 1ps
 
 module fir #(
-    parameter int TAPS = 401,
+    parameter int TAPS = 201,
     parameter int MULTBITS = 32
 )(
     clk,
     rst,
     in_valid, //ensure input is a valid value
     in_sample,
-    in_weights,
     out_valid, //current ouput is valid
     out_sample,
 );
@@ -18,9 +17,10 @@ module fir #(
     input logic clk, rst;
     input logic in_valid;
     input logic [15:0] in_sample;
-    input logic [15:0] in_weights [0 : TAPS - 1];
     output logic out_valid;
     output logic [15:0] out_sample;
+    
+    logic [15:0] in_weights [0 : TAPS - 1];
     
     logic [15:0] sample_shftreg_out [0:TAPS-1]; //wires from shift register
     logic [15:0] sample_shftreg_pipeline_reg [0:TAPS-1]; //pipeline registers for shift register
@@ -42,7 +42,11 @@ module fir #(
     
     logic valid_bits [0:4];
     logic valid_bits_reg [0:4];
-
+    
+    initial begin //Weighting coefficents
+        $readmemb("weighting.mem", in_weights);
+    end
+    
     shftreg_16bit #(.N(TAPS)) sample_shftreg (
       .clk(clk),
       .rst(rst),

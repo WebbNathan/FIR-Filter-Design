@@ -2,19 +2,17 @@
 
 module fir_tb();
 
-    localparam int TAPS = 8;
+    localparam int TAPS = 10;
     localparam int MULTBITS = 32;
     
     logic clk, rst, in_valid, out_valid;
     logic [15:0] in_sample, out_sample;
-    logic [15:0] in_weights [0:TAPS-1];
 
     fir #(.TAPS(TAPS), .MULTBITS(32)) fir_tb (
         .clk(clk),
         .rst(rst),
         .in_valid(in_valid),
         .in_sample(in_sample),
-        .in_weights(in_weights),
         .out_valid(out_valid),
         .out_sample(out_sample)
     );
@@ -33,13 +31,9 @@ module fir_tb();
         #10;
     
         in_sample <= 16'sd1;
-        for(int i = 0; i < TAPS; i++) begin
-            in_weights[i] = 2 * i + 1;
-        end
-        
         #10;
         in_valid = 1;
-        #5;
+
     end 
 
 endmodule

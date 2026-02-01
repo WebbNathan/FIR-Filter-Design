@@ -10,7 +10,8 @@ module accumulator #(
     out,
     out_valid
 );
-    localparam int ACCUBITS = MULTBITS + $clog2(TAPS);
+    localparam int GAURD = 2;
+    localparam int ACCUBITS = MULTBITS + $clog2(TAPS) + GAURD;
     localparam int P = 1 << $clog2(TAPS); //get closest power of 2 for binary tree
     localparam int LOGP = $clog2(P);
     
@@ -20,7 +21,7 @@ module accumulator #(
     output logic signed [ACCUBITS-1:0] out;
     output logic out_valid;
     
-    logic signed [MULTBITS-1:0] padded_mult_out [0:P-1];
+    logic signed [ACCUBITS-1:0] padded_mult_out [0:P-1];
     logic signed [ACCUBITS-1:0] sum [1:P-1];
     logic signed [ACCUBITS-1:0] sum_reg [1:P-1];
     
@@ -54,10 +55,10 @@ module accumulator #(
             
             always_ff @(posedge clk) begin
                 if(i < (P >> 1) && in_valid) begin //making sure inputs valid
-                    sum_reg[P - i - 1] = $signed(sum[P - i - 1]);
+                    sum_reg[P - i - 1] <= $signed(sum[P - i - 1]);
                 end
                 else if (!(i < (P >> 1)))begin
-                    sum_reg[P - i - 1] = $signed(sum[P - i - 1]);
+                    sum_reg[P - i - 1] <= $signed(sum[P - i - 1]);
                 end
             end
         end
@@ -73,12 +74,12 @@ module accumulator #(
             end
             
             always_ff @(posedge clk) begin
-                valid_carry_reg[i] = valid_carry[i];
+                valid_carry_reg[i] <= valid_carry[i];
             end
         end
     endgenerate
     
-    assign out = $signed(sum_reg[1]);
+    assign out = $signed(sum_reg[1]) >>> 15; //shift to convert back to Q1.15
     assign out_valid = valid_carry_reg[LOGP];
     
 endmodule

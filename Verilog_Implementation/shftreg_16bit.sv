@@ -6,6 +6,7 @@ module shftreg_16bit #(
     clk,
     rst,
     in_valid,
+    out_valid,
     data_in,
     data_out     
 );
@@ -13,6 +14,7 @@ module shftreg_16bit #(
     input logic clk, rst, in_valid;
     input logic signed [15:0] data_in;
     output logic signed [15:0] data_out [0:N -1];
+    output logic out_valid;
     
     logic signed [15:0]registers [0:N-1];
     
@@ -31,6 +33,7 @@ module shftreg_16bit #(
                registers[0] <= data_in;
            end
         end
+        out_valid <= in_valid;
     end
     
     genvar i;

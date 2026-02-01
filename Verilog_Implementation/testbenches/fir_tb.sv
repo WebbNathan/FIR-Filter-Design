@@ -4,7 +4,7 @@ module fir_tb();
 
     localparam int INPUT_SIZE = 240000;
 
-    localparam int TAPS = 101;
+    localparam int TAPS = 401;
     localparam int MULTBITS = 32;
     
     logic clk, rst, in_valid, out_valid;
@@ -13,6 +13,7 @@ module fir_tb();
     
     integer outfile;
     integer i = 0;
+    integer writes = 0;
 
     initial begin
         outfile = $fopen("output.mem","w");
@@ -32,11 +33,12 @@ module fir_tb();
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             i <= 0;
+            writes <= 0;
             in_valid <= 0;
             in_sample <= '0;
         end
         else begin
-            if (i < INPUT_SIZE + TAPS + 14 - 1) begin //14 accounting for clock cycles for pipelineing
+            if (i < INPUT_SIZE + TAPS + 16 - 1) begin //16 accounting for clock cycles for pipelineing
                 if (i < INPUT_SIZE) begin
                     in_sample <= input_sample_arr[i];
                     in_valid  <= 1;
@@ -50,8 +52,8 @@ module fir_tb();
             else begin
                 in_valid <= 0;
                 $fclose(outfile);
-                #1000;
                 $display("Simulation done: %0d samples sent", i);
+                $display("Written %0d samples", writes);
                 $finish;
             end
         end
@@ -61,6 +63,7 @@ module fir_tb();
         if (out_valid) begin
             $fwrite(outfile, "%016b\n", out_sample[15:0]);
             $fflush(outfile);
+            writes++;
         end
     end
     

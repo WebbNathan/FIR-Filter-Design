@@ -10,8 +10,7 @@ module accumulator #(
     out,
     out_valid
 );
-    localparam int GAURD = 2;
-    localparam int ACCUBITS = MULTBITS + $clog2(TAPS) + GAURD;
+    localparam int ACCUBITS = MULTBITS + $clog2(TAPS);
     localparam int P = 1 << $clog2(TAPS); //get closest power of 2 for binary tree
     localparam int LOGP = $clog2(P);
     

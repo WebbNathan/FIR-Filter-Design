@@ -31,25 +31,26 @@ module fir_tb();
     
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            i         <= 0;
-            in_valid  <= 0;
+            i <= 0;
+            in_valid <= 0;
             in_sample <= '0;
         end
         else begin
-            if (i < INPUT_SIZE + TAPS - 1) begin
+            if (i < INPUT_SIZE + TAPS + 14 - 1) begin //14 accounting for clock cycles for pipelineing
                 if (i < INPUT_SIZE) begin
                     in_sample <= input_sample_arr[i];
                     in_valid  <= 1;
                 end
                 else begin
                     in_sample <= '0;
-                    in_valid  <= 1;   // flush filter
+                    in_valid  <= 1;
                 end
                 i <= i + 1;
             end
             else begin
                 in_valid <= 0;
                 $fclose(outfile);
+                #1000;
                 $display("Simulation done: %0d samples sent", i);
                 $finish;
             end
